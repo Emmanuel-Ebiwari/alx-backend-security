@@ -3,6 +3,7 @@ import logging
 from django.http import HttpResponse
 from django.core.cache import cache
 import time
+from .model import BlockedIP
 
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler('requests.log')
@@ -20,5 +21,18 @@ class RequestLoggingMiddleware:
     def __call__(self, request):
         ip_address = request.META.get('REMOTE_ADDR', '')
         logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address}")
+        response = self.get_response(request)
+        return response
+
+class BlockIpMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        ip_address = request.META.get('REMOTE_ADDR', '')
+        blocked_ip = BlockedIP.objects.filter(ip_address=ip_address).first()
+        if blocked_ip:
+            return HttpResponse("Your IP has been blocked.", status=403)
+        
         response = self.get_response(request)
         return response

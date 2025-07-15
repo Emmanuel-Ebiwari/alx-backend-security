@@ -12,3 +12,15 @@ class RequestLog(models.Model):
 
     def __str__(self):
         return f"{self.ip_address} - {self.timestamp}"
+    
+class BlockedIP(models.Model):
+    ip_address = models.GenericIPAddressField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Blocked IP"
+        verbose_name_plural = "Blocked IPs"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.created_at}"
