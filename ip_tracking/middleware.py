@@ -20,6 +20,20 @@ class RequestLoggingMiddleware:
 
     def __call__(self, request):
         ip_address = request.META.get('REMOTE_ADDR', '')
+        geo_data = getattr(request, 'geolocation', None)
+
+        if not geo_data:
+            geo_data = {'country': 'Unknown', 'city': 'Unknown'}
+            logger.warning(f"No geolocation data found for IP: {ip_address}")
+
+        if ip_address:
+            cache_key = f"geo_log_{ip_address}"
+            if not cache.get(cache_key):
+                logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address} - Geo: {geo_data}")
+                cache.set(cache_key, True, timeout=86400)  # Cache flag only, not geo data itself
+            else:
+                logger.debug(f"Geo data for {ip_address} already logged recently.")
+
         logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address}")
         response = self.get_response(request)
         return response

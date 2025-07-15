@@ -47,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_ip_geolocation.middleware.IpGeolocationMiddleware', # Middleware for IP geolocation
     'ip_tracking.middleware.RequestLoggingMiddleware',  # Custom middleware for IP tracking
 ]
 
@@ -121,3 +122,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+IP_GEOLOCATION_SETTINGS = {
+    'BACKEND': 'django_ip_geolocation.backends.IPGeolocationAPI',
+    'BACKEND_API_KEY': '',
+    'BACKEND_EXTRA_PARAMS': {},
+    'BACKEND_USERNAME': '',
+    'RESPONSE_HEADER': 'X-IP-Geolocation',
+    'ENABLE_REQUEST_HOOK': True,
+    'ENABLE_RESPONSE_HOOK': True,
+    'ENABLE_COOKIE': False,
+    'FORCE_IP_ADDR': None,
+    'USER_CONSENT_VALIDATOR': 'ip_tracking.helper.helper.check_user_consent',  # Custom user consent validator
+}

@@ -15,6 +15,8 @@ class RequestLog(models.Model):
     
 class BlockedIP(models.Model):
     ip_address = models.GenericIPAddressField(unique=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -23,4 +25,4 @@ class BlockedIP(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.ip_address} - {self.created_at}"
+        return f"{self.ip_address} - {self.created_at} - {self.country}, {self.city}"
