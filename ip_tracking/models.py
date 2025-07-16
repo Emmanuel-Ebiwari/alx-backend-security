@@ -26,3 +26,16 @@ class BlockedIP(models.Model):
 
     def __str__(self):
         return f"{self.ip_address} - {self.created_at} - {self.country}, {self.city}"
+
+class SuspiciousIP(models.Model):
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Suspicious IP"
+        verbose_name_plural = "Suspicious IPs"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.created_at} - {self.reason}"

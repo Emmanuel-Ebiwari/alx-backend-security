@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from django.http import HttpResponse
 from django.core.cache import cache
@@ -12,11 +12,9 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # One-time configuration and initialization.
 
     def __call__(self, request):
         ip_address = request.META.get('REMOTE_ADDR', '')
@@ -26,15 +24,24 @@ class RequestLoggingMiddleware:
             geo_data = {'country': 'Unknown', 'city': 'Unknown'}
             logger.warning(f"No geolocation data found for IP: {ip_address}")
 
-        if ip_address:
-            cache_key = f"geo_log_{ip_address}"
-            if not cache.get(cache_key):
-                logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address} - Geo: {geo_data}")
-                cache.set(cache_key, True, timeout=86400)  # Cache flag only, not geo data itself
-            else:
-                logger.debug(f"Geo data for {ip_address} already logged recently.")
+        # Existing geo log
+        cache_key = f"geo_log_{ip_address}"
+        if not cache.get(cache_key):
+            logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address} - Geo: {geo_data}")
+            cache.set(cache_key, True, timeout=86400)
 
-        logger.info(f"{datetime.now()} - Path: {request.path} - IP: {ip_address}")
+        # Track request paths and timestamps for later checking
+        if ip_address:
+            request_log_key = f"request_logs_{ip_address}"
+            logs = cache.get(request_log_key, [])
+            logs.append({"path": request.path, "time": datetime.now(timezone.utc).isoformat()})
+            cache.set(request_log_key, logs, timeout=3600)  # Keep logs for 1 hour
+
+            # Maintain active IP list
+            tracked_ips = cache.get("tracked_ips", set())
+            tracked_ips.add(ip_address)
+            cache.set("tracked_ips", tracked_ips, timeout=3600)
+
         response = self.get_response(request)
         return response
 

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Custom apps
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -142,4 +145,11 @@ IP_GEOLOCATION_SETTINGS = {
     'ENABLE_COOKIE': False,
     'FORCE_IP_ADDR': None,
     'USER_CONSENT_VALIDATOR': 'ip_tracking.helper.helper.check_user_consent',  # Custom user consent validator
+}
+
+CELERY_BEAT_SCHEDULE = {
+    'flag-suspicious-ips-hourly': {
+        'task': 'ip_tracking.tasks.flag_suspicious_ips',
+        'schedule': crontab(minute=0),  # Every hour on the hour
+    },
 }
