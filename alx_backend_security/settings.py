@@ -123,6 +123,14 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+    }
+}
+
+RATELIMIT_CACHE = 'default'
+
 IP_GEOLOCATION_SETTINGS = {
     'BACKEND': 'django_ip_geolocation.backends.IPGeolocationAPI',
     'BACKEND_API_KEY': '',
